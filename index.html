@@ -796,11 +796,13 @@ mark.amark{background:#ffe680;color:#111;border-radius:4px;padding:0 2px;font-we
 .aichatmsg .aimsgin code{
   background:#efeaff;border:1px solid #ddd3ff;border-radius:6px;padding:0 5px;
   font-family:ui-monospace,Consolas,monospace;font-size:12.4px;color:#5b3fa8;
+  direction:ltr;unicode-bidi:isolate; /* أرقام/رينجات زي <0.05 تتقري زي ما هي */
 }
 .aichatmsg.user code{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);color:#ffe680}
-.ailist{margin:4px 0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
-.ailist li{padding-left:3px}
-.ailist li::marker{content:"✦ ";color:#8a6dff}
+.ailist{margin:4px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.ailist li{display:block;position:relative;padding-inline-start:15px}
+.ailist li::before{content:"✦";position:absolute;inset-inline-start:0;top:0;color:#8a6dff}
+.aichatmsg .aimsgin b,.aichatmsg .aimsgin i{unicode-bidi:isolate}
 .ailine{margin:3px 0}
 .aihead{font-weight:900;color:#5b3fa8;margin:6px 0 2px;font-size:13.8px}
 .aichatmsg .cw{cursor:pointer;border-radius:4px;padding:0 1px;transition:background .15s}
@@ -1021,8 +1023,8 @@ mark.amark{background:#ffe680;color:#111;border-radius:4px;padding:0 2px;font-we
 
 /* --- bidi: every line follows its own words — Arabic reads right-to-left --- */
 .aichatmsg [dir="rtl"]{ text-align:right; }
-.aichatmsg .ailist li[dir="rtl"]{ padding-left:0; padding-right:10px; }
-.aichatmsg .ailist li[dir="rtl"]::marker{ content:"✦ "; }
+/* كل سطر فيه عربي بيتعرض RTL (كأنه بادئ بكلمة عربي) — والـ✦ في أول السطر ناحية اليمين */
+.aichatmsg .ailist li[dir="rtl"]{ padding-left:0; padding-right:15px; }
 .aimtitle[dir="rtl"], .aim.none[dir="rtl"], .aimoff[dir="rtl"], .aimload[dir="rtl"],
 .aimask[dir="rtl"], .aim.did[dir="rtl"]{ text-align:right; }
 input[dir="auto"], textarea[dir="auto"]{ unicode-bidi: plaintext; }
@@ -1353,6 +1355,20 @@ img,svg,video,table,pre{max-width:100%}
   .aichatbar .aitxt{font-size:calc(10.2px * var(--tx))}
   .ainote .apts li{font-size:calc(10.6px * var(--tx))}
 }
+/* ===== ⬇ download: جنب زرار الموديل — بيحمّل الكويز HTML واحد يشتغل أوفلاين ===== */
+#dlbtn{
+  border:0;cursor:pointer;border-radius:999px;padding:4px 10px;
+  font:inherit;font-weight:900;font-size:10.6px;letter-spacing:.3px;color:#fff;
+  background:linear-gradient(180deg,#37536E 0%,#294056 100%);
+  box-shadow:0 5px 16px rgba(0,0,0,.25);white-space:nowrap;
+}
+#dlbtn:hover{
+  filter:brightness(1.35) saturate(1.05);
+  box-shadow:0 0 0 3px var(--yellow),0 0 0 8px rgba(255,210,31,.3),0 6px 18px rgba(0,0,0,.28);
+}
+#dlbtn:active{filter:brightness(1.6)}
+#dlbtn:disabled{opacity:.65;cursor:progress}
+@media (max-width:400px){ #modelwrap{gap:5px} #dlbtn{font-size:9.4px;padding:3px 7px} }
 </style>
 </head>
 <body>
@@ -1362,6 +1378,7 @@ img,svg,video,table,pre{max-width:100%}
 <!-- ===== TOP CENTRE: the switch between the two models (small, taskbar-like) ===== -->
 <div id="modelwrap">
   <button id="modelbtn" title="switch the model">🤖 AI model ⇄ file</button>
+  <button id="dlbtn" type="button" title="حمّل الكويز كملف HTML يشتغل أوفلاين · download (works offline)" aria-label="download the quiz as an offline HTML file">⬇ download</button>
 </div>
 
 <!-- ===== LEFT: the number boxes - a small task-bar, always in place ===== -->
@@ -1516,6 +1533,8 @@ img,svg,video,table,pre{max-width:100%}
 
 
 <script>
+/* ⬇ download (أوفلاين): نسخة من الصفحة قبل ما أي سكريبت يغيّر فيها — احتياطي لو fetch مش متاح (file:// أو من غير نت) */
+try { window.__QUIZ_PRE__ = document.documentElement.outerHTML; window.__QUIZ_PRE_EL__ = document.currentScript; } catch (e) {}
 /* =========================================================================
    THE DATA  (🤖 AI model + 📄 file model)
    -------------------------------------------------------------------------
@@ -5595,7 +5614,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A pregnant woman has high T3 and T4 with alowTSHand negative thyroid autoantibodies — what diagnosis is printed for this card?",
+   "text": "A pregnant woman has high T3 and T4 with a low TSH and negative thyroid autoantibodies — what diagnosis is printed for this card?",
    "choices": [
     "Gestational transient thyrotoxicosis",
     "Subclinical hyperthyroidism",
@@ -5653,7 +5672,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 74-year-old woman develops atrial fibrilla-tion. She hasno prior history of heart disease.Her thyroid-stimulating hormone (TSH) levelis very low. Which of the following cardiacfindings might also be seen in this condition?",
+   "text": "A 74-year-old woman develops atrial fibrillation. She has no prior history of heart disease. Her thyroid-stimulating hormone (TSH) level is very low. Which of the following cardiac findings might also be seen in this condition?",
    "choices": [
     "Aortic regurgitation",
     "Hypotension",
@@ -5718,7 +5737,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A raised ESR ina patient with a painful, tender thyroid points to which diagnosis?",
+   "text": "A raised ESR in a patient with a painful, tender thyroid points to which diagnosis?",
    "choices": [
     "De Quervain thyroiditis",
     "Hashimoto thyroiditis",
@@ -5775,7 +5794,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "18.15. A 23 year old white woman presentswith a 6-month history of increasing neck swelling and discomfort on swallowing.On examination she has a smooth diffusesymmetrical goitre. Thyroid function testsare normal and thyroid antibody levels areundetectable. Ultrasound shows a diffuseand symmetrical echogenic pattern,with no significant nodularity. Whichof the follow statements is correct in thisscenario?",
+   "text": "18.15. A 23 year old white woman presents with a 6-month history of increasing neck swelling and discomfort on swallowing. On examination she has a smooth diffuse symmetrical goitre. Thyroid function tests are normal and thyroid antibody levels are undetectable. Ultrasound shows a diffuse and symmetrical echogenic pattern, with no significant nodularity. Which of the follow statements is correct in this scenario?",
    "choices": [
     "Graves disease",
     "Riedel thyroiditis",
@@ -6015,7 +6034,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A large goitre causing pressure symptoms on the trachea and oesophagus — howisit managed?",
+   "text": "A large goitre causing pressure symptoms on the trachea and oesophagus — how is it managed?",
    "choices": [
     "Radioiodine",
     "Antithyroid drugs",
@@ -6072,7 +6091,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Solitary thyroid nodule may be dueto all EXCEPT:",
+   "text": "Solitary thyroid nodule may be due to all EXCEPT:",
    "choices": [
     "Simple nodule",
     "Thyroid cyst",
@@ -6533,7 +6552,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A patient hasalowTSH with high free T3 and free T4 — what is the diagnosis?",
+   "text": "A patient has a low TSH with high free T3 and free T4 — what is the diagnosis?",
    "choices": [
     "Secondary hyperthyroidism",
     "Primary hyperthyroidism",
@@ -6618,7 +6637,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 24-year-old woman presents to the clinic with recurrent palpitations. She continues to hold down herjobasa nurse on the Cardiology Ward of the local hospital but feels increasingly tired. There is no past medical history of note and her only medication is the oral contraceptive pill. On examination, herBP is 122/72 mmHg (normal <120/80 mm Hg), with pulse 70/min (normal 60–100/min) and regular. Her BMI is 25 (normal 18.5–24.9 kg/m²). Her TSHis 0.15 mU/l (0.4–5), free T4 is 20.0 pmol/l (10–22) and free T3 is 9.3 pmol/l (5–10). Which of the following is the most likely diagnosis?",
+   "text": "A 24-year-old woman presents to the clinic with recurrent palpitations. She continues to hold down her job as a nurse on the Cardiology Ward of the local hospital but feels increasingly tired. There is no past medical history of note and her only medication is the oral contraceptive pill. On examination, her BP is 122/72 mmHg (normal <120/80 mm Hg), with pulse 70/min (normal 60–100/min) and regular. Her BMI is 25 (normal 18.5–24.9 kg/m²). Her TSH is 0.15 mU/l (0.4–5), free T4 is 20.0 pmol/l (10–22) and free T3 is 9.3 pmol/l (5–10). Which of the following is the most likely diagnosis?",
    "choices": [
     "Pituitary failure",
     "Sick euthyroid syndrome",
@@ -7192,7 +7211,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Neurological features of thyrotoxic:osis do not include:",
+   "text": "Neurological features of thyrotoxicosis do not include:",
    "choices": [
     "Hypokalaemic periodic paralysis",
     "Exaggerated deep reflexes",
@@ -7913,7 +7932,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "18,10, A 40 year old male smoker presents with weight loss and blood tests suggesting biochemical primary hyperthyroidism. Which of the following features would suggest that the hyperthyroidism is dueto Graves’ disease?",
+   "text": "18,10, A 40 year old male smoker presents with weight loss and blood tests suggesting biochemical primary hyperthyroidism. Which of the following features would suggest that the hyperthyroidism is due to Graves’ disease?",
    "choices": [
     "Gynaecomastia",
     "Lack of orbitopathy",
@@ -7977,7 +7996,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 45-year-old woman whohasa history of Graves' disease presentswith visual problems. She is known to have Graves' ophthalmopathyand does not currently smoke. Her most recent thyroid function testsare shown below:FreeT4 15 pmol/lTSH 1.6 mu/|Which one of the following features is the strongest indicator of theneed for urgent ophthalmology review?",
+   "text": "A 45-year-old woman who has a history of Graves' disease presents with visual problems. She is known to have Graves' ophthalmopathy and does not currently smoke. Her most recent thyroid function tests are shown below: Free T4 15 pmol/l TSH 1.6 mu/| Which one of the following features is the strongest indicator of the need for urgent ophthalmology review?",
    "choices": [
     "Change in colour vision intensity",
     "Sensitivity of the eyes to light",
@@ -8605,7 +8624,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "1- Female patient 28 y. old presented with tremors, excessive sweating insomnia,tachycardia & wt loss inspite of good feedinga. What is your diagnosis?b. What are the investigations?c. TTT you suggest?",
+   "text": "1- Female patient 28 y. old presented with tremors, excessive sweating insomnia, tachycardia & wt loss in spite of good feeding a. What is your diagnosis?b. What are the investigations?c. TTT you suggest?",
    "choices": [],
    "ans": [],
    "why": [
@@ -8655,7 +8674,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "3- A 38 y. old lady noticed that she is losing weight and suffers from anxiety & insomnia atnight. Examination revealed a temp. 36.3°Cm pulse 135/mm, and shehas warm tremoringhands. ESR is normal.a. What is your diagnosis?b. What are the investigations?c. TTT you suggest?",
+   "text": "3- A 38 y. old lady noticed that she is losing weight and suffers from anxiety & insomnia at night. Examination revealed a temp. 36.3°Cm pulse 135/mm, and she has warm tremoring hands. ESR is normal. a. What is your diagnosis? b. What are the investigations? c. TTT you suggest?",
    "choices": [],
    "ans": [],
    "why": [
@@ -8705,7 +8724,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "6- A 35 y. old woman presented with 6 months history of diarrhea, weight loss andpalpitation. She was seen by psychiatrist for feeling anxious & irritable and was givenatranquilizer without good response.a. What is the most important disease you have to exclude?b. Mention important clinical signs that can help you in its diagnosis?c. Mention important blood testes help you in its diagnosis?d. If the diagnosis proved to be correct how to manage?",
+   "text": "6- A 35 y. old woman presented with 6 months history of diarrhea, weight loss and palpitation. She was seen by psychiatrist for feeling anxious & irritable and was given a tranquilizer without good response.a. What is the most important disease you have to exclude?b. Mention important clinical signs that can help you in its diagnosis?c. Mention important blood testes help you in its diagnosis?d. If the diagnosis proved to be correct how to manage?",
    "choices": [],
    "ans": [],
    "why": [
@@ -9404,7 +9423,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Which one of the following is the most common cause of hypothyroidism intheUK?",
+   "text": "Which one of the following is the most common cause of hypothyroidism in the UK?",
    "choices": [
     "Pituitary failure",
     "Dietary iodine deficiency",
@@ -10150,7 +10169,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 60-year-old woman with tiredness, constipation, weight gain and tingling of hands and feet, puffy pale face, mild anaemia and hypercholesterolaemia with cardiomegaly on chest x-ray — diagnosis, explanation ofthex-ray, cause of the tingling and treatment",
+   "text": "A 60-year-old woman with tiredness, constipation, weight gain and tingling of hands and feet, puffy pale face, mild anaemia and hypercholesterolaemia with cardiomegaly on chest x-ray — diagnosis, explanation of the x-ray, cause of the tingling and treatment",
    "choices": [],
    "ans": [],
    "why": [
@@ -10464,7 +10483,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "In Graves’ ophthalmopathy© diplopia is the most common presentingsymptom© the patient is invariably thyrotoxic@ serum eye muscle antibodies arepathognomoni",
+   "text": "In Graves’ ophthalmopathy© diplopia is the most common presenting symptom© the patient is invariably thyrotoxic@ serum eye muscle antibodies are pathognomoni",
    "choices": [],
    "ans": [],
    "why": [
@@ -10917,7 +10936,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 17-year-old woman presents with symptoms of a fine tremor of her hands. The tremor isbest seen when her hands are stretched out.She is not on any medications and reports noalcohol use. Which of the following is the mostlikely diagnosis?",
+   "text": "A 17-year-old woman presents with symptoms of a fine tremor of her hands. The tremor is best seen when her hands are stretched out. She is not on any medications and reports no alcohol use. Which of the following is the most likely diagnosis?",
    "choices": [
     "Hypopituitarism",
     "Hyperthyroidism",
@@ -11168,7 +11187,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 54-year-old female presents to the Emergency Department concernedabout double vision. She is noted to have exophthalmos andconjunctival oedema on examination and a diagnosis of thyroid eyedisease is suspected. What can be said regarding her thyroid status?",
+   "text": "A 54-year-old female presents to the Emergency Department concerned about double vision. She is noted to have exophthalmos and conjunctival oedema on examination and a diagnosis of thyroid eye disease is suspected. What can be said regarding her thyroid status?",
    "choices": [
     "Hyperthyroid or euthyroid only",
     "Hypothyroid only",
@@ -11252,7 +11271,7 @@ const MASTER = [
    "text": "Which of the following is not true for Hashimoto thyroiditis?",
    "choices": [
     "Surgery is required in almost all cases",
-    "Itisan autoimmune disease caused by CD4 cells specific to thyroid antigens",
+    "It is an autoimmune disease caused by CD4 cells specific to thyroid antigens",
     "It commonly presents as hypothyroidism",
     "It can progress to lymphoma of the thyroid"
    ],
@@ -11788,7 +11807,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Peroxidase ab with Hashimoto?Anti-thyroid peroxidase antibody.",
+   "text": "Peroxidase ab with Hashimoto? Anti-thyroid peroxidase antibody.",
    "choices": [
     "Thyroid-stimulating immunoglobulin (TSI)",
     "Anti-thyroglobulin (anti-Tg)",
@@ -12558,7 +12577,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 34-year-old woman sees her General Practitioner (GP) complaining of persistent fatigue and difficulty losing weight. She often feels cold and has been constipated. She discussed these symptoms with her mother, who advised that sheseeherGP because she had experienced similar symptoms when she was diagnosed with Hashimoto’s thyroiditis. Which autoantibody is she most likely to have in her blood?",
+   "text": "A 34-year-old woman sees her General Practitioner (GP) complaining of persistent fatigue and difficulty losing weight. She often feels cold and has been constipated. She discussed these symptoms with her mother, who advised that she see her GP because she had experienced similar symptoms when she was diagnosed with Hashimoto’s thyroiditis. Which autoantibody is she most likely to have in her blood?",
    "choices": [
     "21-Hydroxylase antibody",
     "Glutamic acid decarboxylase antibody",
@@ -13153,7 +13172,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "You review a 36-year-old woman who presents to the Emergency Department with anxietyand palpitations. She has an 8-month-old child. Over the past 4 months, she has lost 5 kg inweight but puts this down to all the work looking after her baby.The admitting nurses notice that she has rather ‘staring eyes’ and on examination you noticeshe has obvious chemosis, proptosis and lid lag. Thyroid-stimulating hormone (TSH)measurement is 0.05 mU/l (normal 0.4-4.5 mU/L).Which of the following best fits the underlying diagnosis of her systemiccondition?",
+   "text": "You review a 36-year-old woman who presents to the Emergency Department with anxiety and palpitations. She has an 8-month-old child. Over the past 4 months, she has lost 5 kg in weight but puts this down to all the work looking after her baby. The admitting nurses notice that she has rather ‘staring eyes’ and on examination you notice she has obvious chemosis, proptosis and lid lag. Thyroid-stimulating hormone (TSH)measurement is 0.05 mU/l (normal 0.4-4.5 mU/L). Which of the following best fits the underlying diagnosis of her systemic condition?",
    "choices": [
     "Hashimoto's thyroiditis",
     "Graves' disease",
@@ -13478,7 +13497,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 45-year-old Caucasian woman presents to the clinic complaining of a central neck swelling. She describes being restless and anxious and is always hot. On.examination of the neck, you detect goitre. She appears to have clubbing. Examination of her eyes reveals injected conjunctiva, proptosis, and swelling of the eyelids. Her visual acuity is normal but there is some restriction ofher eye movements. What is the most likely diagnosis? K:",
+   "text": "A 45-year-old Caucasian woman presents to the clinic complaining of a central neck swelling. She describes being restless and anxious and is always hot. On examination of the neck, you detect goitre. She appears to have clubbing. Examination of her eyes reveals injected conjunctiva, proptosis, and swelling of the eyelids. Her visual acuity is normal but there is some restriction of her eye movements. What is the most likely diagnosis? K:",
    "choices": [
     "Graves' disease",
     "Hashimoto's thyroiditis",
@@ -13672,7 +13691,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 46-year-old woman is referred to endocrine with a tender neck swelling. Blood results are as follows:TSH <0.1 mU/IHb 14.2 g/dlPit 377 * 10°/IWBC 6.4*102/IESR 65 mm/hrTechnetium thyroid scan shows decreased uptake globallyWhat is the most likely diagnosis?",
+   "text": "A 46-year-old woman is referred to endocrine with a tender neck swelling. Blood results are as follows: TSH <0.1 mU/I Hb 14.2 g/dl Pit 377 * 10°/I WBC 6.4*102/I ESR 65 mm/hr Technetium thyroid scan shows decreased uptake globally What is the most likely diagnosis?",
    "choices": [
     "Sick thyroid syndrome",
     "Acute bacterial thyroiditis",
@@ -13844,7 +13863,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 24-year-old woman who is 24 weeks’ pregnant is referred to the clinic complaining ofincreasing tiredness, emotional lability, tiredness particularly in the evenings, and episodes ofpalpitations. HerGPhasput this down to the normal stresses and strains associated with afirst pregnancy. On examination she looks tired, herBP is 125/78 mmHg (normal <120/80 mm Hg) and her pulse is90/min (normal 60–100/min) at rest. You notice that she has sweaty palms. There is a small, smooth goitre onpalpation.Investigations reveal the following:Investigation | Result | Normal valueHaemoglobin (Hb) | 110 g/dl. | 11.5 –15.5 g/dlWhite cell count (WCC) | 54 × 109/l. | 4.0 –11.0 × 10 9/lPlatelets (PLT) | 182 × 109/l | 150 –400 × 109/lSodium (Na+) | 139 mmol/l | 135 –145 mmol/lPotassium (K+) | 41 mmol/l. | 3.5 –5.0 mmol/lCreatinine (Cr) | 100 µmol/l | 50 –120 µmol/lThyroid -stimulating hormone (TSH) | < 005 µU/l. | 0.17 –3.2 µU/lWhich of the following is the most likely diagnosis?",
+   "text": "A 24-year-old woman who is 24 weeks’ pregnant is referred to the clinic complaining of increasing tiredness, emotional lability, tiredness particularly in the evenings, and episodes of palpitations. Her GP has put this down to the normal stresses and strains associated with a first pregnancy. On examination she looks tired, her BP is 125/78 mmHg (normal <120/80 mm Hg) and her pulse is90/min (normal 60–100/min) at rest. You notice that she has sweaty palms. There is a small, smooth goitre on palpation. Investigations reveal the following: Investigation | Result | Normal value Haemoglobin (Hb) | 110 g/dl. | 11.5 –15.5 g/dl White cell count (WCC) | 54 × 109/l. | 4.0 –11.0 × 10 9/l Platelets (PLT) | 182 × 109/l | 150 –400 × 109/l Sodium (Na+) | 139 mmol/l | 135 –145 mmol/l Potassium (K+) | 41 mmol/l. | 3.5 –5.0 mmol/l Creatinine (Cr) | 100 µmol/l | 50 –120 µmol/l Thyroid-stimulating hormone (TSH) | < 005 µU/l. | 0.17 –3.2 µU/l Which of the following is the most likely diagnosis?",
    "choices": [
     "Graves' disease",
     "Hyperemesis gravidarum",
@@ -14533,7 +14552,7 @@ const MASTER = [
    "text": "All the following are true statements about a clinically solitary thyroid nodule EXCEPT:",
    "choices": [
     "Could be simple, toxic or malignant",
-    "A cold nodule on thyroid scan means that itisa malignant nodule",
+    "A cold nodule on thyroid scan means that it is a malignant nodule",
     "History, examination, ultrasound and FNAC are the triple assessment",
     "Surgery is not the only option of treatment"
    ],
@@ -14680,7 +14699,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "thyroid-binding globulin levels.QUICK QUIZ: HYPERTHYROIDISMWhich of the following cause(s) hyperthyroidism?",
+   "text": "thyroid-binding globulin levels. QUICK QUIZ: HYPERTHYROIDISM Which of the following cause(s) hyperthyroidism?",
    "choices": [],
    "ans": [],
    "why": [
@@ -15357,7 +15376,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 47-year-old woman presents to her physician complaining of weight gain, fatigue, and lethargy. Her a ppetit e has decreased recently and shehas been constipated. Physical examin a tion reveals anenl arged, symmetric, and firm thyroid. A thyroid biopsy is significa ntfora lymphocytic and plasma cell Infiltrate with occasional germin alcenter form a tion. T he follicles contain little colloid, and the follicular epith elial lining shows enlarged epithelial cells containing acidophilic cytoplasm. Which of the following antibodies is most likely to be found in this patient?",
+   "text": "A 47-year-old woman presents to her physician complaining of weight gain, fatigue, and lethargy. Her appetite has decreased recently and she has been constipated. Physical examination reveals an enlarged, symmetric, and firm thyroid. A thyroid biopsy is significant for a lymphocytic and plasma cell Infiltrate with occasional germinal center formation. The follicles contain little colloid, and the follicular epithelial lining shows enlarged epithelial cells containing acidophilic cytoplasm. Which of the following antibodies is most likely to be found in this patient?",
    "choices": [
     "Anti-smooth muscle",
     "Anti-U1 RNP",
@@ -15494,7 +15513,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "▶CASE 10.1A 27-year-old female presents to the office with the chief com-plaint of fatigue for 4 months. She has gained 17 lb in thatsame time, despite a decreased appetite. She also complainsof depression, increased sleepiness, lack of energy, hair loss,and cold intolerance. Her past medical history is unremark-able, and she takes no medications. She has never had anysurgeries. Shedida little Internet research, and according toDr. Oz, she might have a thyroid problem.Question 10.1.1 Which of the following physical examinationfindings would be expected?",
+   "text": "▶CASE 10.1 A 27-year-old female presents to the office with the chief complaint of fatigue for 4 months. She has gained 17 lb in that same time, despite a decreased appetite. She also complains of depression, increased sleepiness, lack of energy, hair loss, and cold intolerance. Her past medical history is unremarkable, and she takes no medications. She has never had any surgeries. She did a little Internet research, and according to Dr. Oz, she might have a thyroid problem. Question 10.1.1 Which of the following physical examination findings would be expected?",
    "choices": [],
    "ans": [],
    "why": [
@@ -15601,7 +15620,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 40-year-old woman is referred to the Endocrine Clinic complaining of an eight monthhistory of constant sweating and occasionally being feverish. She found her recent summerholiday to Turkey unbearable and had to return totheUK early. She has also noticed that shehas lost weight over the last year, though her appetite remains fine.On examination, she is febrile but tachycardic. Her palms are sweaty. No goitre is palpable.There is no cervical lymphadenopathy. Routine full blood count (FBC), urea and electrolytes(U&E) and liver function tests (LFT) are normal.What is the most likely diagnosis?",
+   "text": "A 40-year-old woman is referred to the Endocrine Clinic complaining of an eight month history of constant sweating and occasionally being feverish. She found her recent summer holiday to Turkey unbearable and had to return to the UK early. She has also noticed that she has lost weight over the last year, though her appetite remains fine. On examination, she is febrile but tachycardic. Her palms are sweaty. No goitre is palpable. There is no cervical lymphadenopathy. Routine full blood count (FBC), urea and electrolytes(U&E) and liver function tests (LFT) are normal. What is the most likely diagnosis?",
    "choices": [
     "Hodgkin's lymphoma",
     "Non-Hodgkin's lymphoma",
@@ -15924,7 +15943,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 32-year-old female presents with a 2 month history of agitation, menstrualirregularity and weight loss. Examination reveals a tremor and a palpable goitre with abruit. Which of the following would most likely be present in this patient?",
+   "text": "A 32-year-old female presents with a 2 month history of agitation, menstrual irregularity and weight loss. Examination reveals a tremor and a palpable goitre with a bruit. Which of the following would most likely be present in this patient?",
    "choices": [
     "Anti-thyroglobulin antibodies",
     "TSH receptor stimulating antibodies",
@@ -15989,7 +16008,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "3. A 40-year-old woman presents with increased nervousness for the past 3 months.She reports insomnia, frequent palpitations without an identifiable cause, andweakness. She hasno significant past medical history and takes no medications. Vitalsigns are remarkable for a blood pressure of 150/60 mmHg anda pulse of 135/mm.She appears anxious, and despite being in the middle of winter, is dressed inaT-shirt.Physical examination reveals proptosis and eyelid retraction, moist skin, mild handtremor, and a palpable diffuse goiter. Which of the following is the most likelydiagnosis?",
+   "text": "3. A 40-year-old woman presents with increased nervousness for the past 3 months. She reports insomnia, frequent palpitations without an identifiable cause, and weakness. She has no significant past medical history and takes no medications. Vital signs are remarkable for a blood pressure of 150/60 mmHg and a pulse of 135/mm. She appears anxious, and despite being in the middle of winter, is dressed in a T-shirt. Physical examination reveals proptosis and eyelid retraction, moist skin, mild hand tremor, and a palpable diffuse goiter. Which of the following is the most likely diagnosis?",
    "choices": [
     "Euthyroid sick syndrome",
     "Hashimoto thyroiditis",
@@ -16184,7 +16203,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Question 10.2.2 Which of the following tests is most specificfor Graves’ disease?",
+   "text": "Question 10.2.2 Which of the following tests is most specific for Graves’ disease?",
    "choices": [
     "Anti-thyroglobulin antibody",
     "Anti-thyroid peroxidase antibody",
@@ -16247,7 +16266,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 44-year-old woman presents toherGPassheis feeling 'hot all the time1 and is consequently worriedshe is going through an early menopause. Her husband has also noticed a 'fullness' of her neck whichhas become apparent over the past few weeks. On examination her pulse is 90/minute and shehas asmall, non-tender goitre. Blood tests are arrangedTSHc 0,05 mu/IFree T424 pmol/lAnti-thyroid peroxidase antibodies102 IU/mL (< 35 IU/mL)ESR23 mm/hrWhat is the most likely diagnosis?©Hashimoto's thyroiditis:",
+   "text": "A 44-year-old woman presents to her GP as she is feeling 'hot all the time1 and is consequently worried she is going through an early menopause. Her husband has also noticed a 'fullness' of her neck which has become apparent over the past few weeks. On examination her pulse is 90/minute and she has a small, non-tender goitre. Blood tests are arranged TSHc 0,05 mu/I Free T4 24 pmol/l Anti-thyroid peroxidase antibodies 102 IU/mL (< 35 IU/mL) ESR 23 mm/hr What is the most likely diagnosis? ©Hashimoto's thyroiditis:",
    "choices": [
     "Graves' disease",
     "Hashimoto's thyroiditis",
@@ -16617,7 +16636,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "18,23. A 62 year old woman is referred with a3-month history of diffuse swelling in her neckand weight loss. On palpation she has a large,firm nodular goitre and non-tender cervicallymphadenopathy. She complains of /hoarseness of her voice. What is her likeldiagnosis? iAvAnaplastic\\carcinoma rapid progression8. Follicular cell carcinomaC, Medutllary carcinomaD, Papillary cell carcinomaE, Toxic adenoma:",
+   "text": "18,23. A 62 year old woman is referred with a 3-month history of diffuse swelling in her neck and weight loss. On palpation she has a large, firm nodular goitre and non-tender cervical lymphadenopathy. She complains of /hoarseness of her voice. What is her likel diagnosis? iAv Anaplastic\\carcinoma rapid progression 8. Follicular cell carcinoma C, Medutllary carcinoma D, Papillary cell carcinoma E, Toxic adenoma:",
    "choices": [
     "Follicular cell carcinoma",
     "Anaplastic carcinoma",
@@ -16682,7 +16701,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "18,24, A 34 year old woman is reviewedin the thyroid cancer clinic following totalthyroidectomy and neck dissection with lymphnode clearance for a confirmed (pT4, N1, MO)papillary thyroid cancer. Follow-up managementpost-surgery should include which of thefollowing?A, Levothyroxine replacement aiming to keepTSH within the normal range:",
+   "text": "18,24, A 34 year old woman is reviewed in the thyroid cancer clinic following total thyroidectomy and neck dissection with lymph node clearance for a confirmed (pT4, N1, MO) papillary thyroid cancer. Follow-up management post-surgery should include which of the following? A, Levothyroxine replacement aiming to keep TSH within the normal range:",
    "choices": [
     "Levothyroxine replacement aiming to keep TSH within the normal range",
     "Radioactive iodine treatment when TSH is fully suppressed",
@@ -17050,7 +17069,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Ttt for differentiated thyroid tumor?Surgery + RAI + levothyroxine.",
+   "text": "Ttt for differentiated thyroid tumor? Surgery + RAI + levothyroxine.",
    "choices": [
     "Radioiodine alone",
     "Levothyroxine suppression alone",
@@ -17550,7 +17569,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "An 81-year old female is admitted with a 6-week history dysphagia to both solidsand liquids. She describes odynophagia, weight loss and night sweats.On examination there was firm irregular mass in the right side of the anteriortriangle of the neck. It was fixed, cold and painless. The mass moved withswallowing and you note a faint stridor like sound on inspiration. There was afurther 3 irregular lymph nodes of note on palpation.Bloods:Thyroid stimulating hormone 4.5 mu/lFree T4 12 pmol/lTotal T4 99 nmol/lAn ultrasound-guided biopsy is likely to reveal which histological tumour?PapillaryFollicularMedullaryAnaplasticLymphoma:",
+   "text": "An 81-year old female is admitted with a 6-week history dysphagia to both solids and liquids. She describes odynophagia, weight loss and night sweats. On examination there was firm irregular mass in the right side of the anterior triangle of the neck. It was fixed, cold and painless. The mass moved with swallowing and you note a faint stridor like sound on inspiration. There was a further 3 irregular lymph nodes of note on palpation. Bloods: Thyroid stimulating hormone 4.5 mu/l Free T4 12 pmol/l Total T4 99 nmol/l An ultrasound-guided biopsy is likely to reveal which histological tumour? Papillary Follicular Medullary Anaplastic Lymphoma:",
    "choices": [
     "Papillary",
     "Anaplastic",
@@ -17615,7 +17634,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 61-year-old woman is investigated for hoarseness and dyspnoeawhich has got progressively worse over the past month. In the past shehas been diagnosed with toxic multinodular goitre which wassuccessfully treated with radioiodine. On examination she has a firm,asymmetrical swelling of the thyroid gland. Laryngoscopydemonstrates a right vocal cord paralysis and apparent externalcompression of the trachea. What is the most likely diagnosis?",
+   "text": "A 61-year-old woman is investigated for hoarseness and dyspnoea which has got progressively worse over the past month. In the past she has been diagnosed with toxic multinodular goitre which was successfully treated with radioiodine. On examination she has a firm, asymmetrical swelling of the thyroid gland. Laryngoscopy demonstrates a right vocal cord paralysis and apparent external compression of the trachea. What is the most likely diagnosis?",
    "choices": [
     "Follicular thyroid cancer",
     "Papillary thyroid cancer",
@@ -17680,7 +17699,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 76-year-old man presents with a 1- month history of progressive shortness of breath, stridor, and hoarseness. Physi cal examination reveals a large, firm thyroid mass. CT reveals that the mass exte nds posteriorly to the trachea and into the upper medi ast inum. Fine-needle aspiration biopsy shows pleomorphic spindle cells. After surgical resection, pulmonary metastases are Identified on X-ray of the chest.Which of the following is the most like ly neoplasm?",
+   "text": "A 76-year-old man presents with a 1- month history of progressive shortness of breath, stridor, and hoarseness. Physical examination reveals a large, firm thyroid mass. CT reveals that the mass extends posteriorly to the trachea and into the upper mediastinum. Fine-needle aspiration biopsy shows pleomorphic spindle cells. After surgical resection, pulmonary metastases are Identified on X-ray of the chest. Which of the following is the most likely neoplasm?",
    "choices": [
     "Anaplastic carcinoma",
     "Follicular carcinoma",
@@ -17807,7 +17826,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 45-year-old female presented to the surgical clinic complaining of difficulty in swallowing. On examination a single nodule was palpated in her thyroid gland which was confirmed tobea solitary nodule with no uptake by thyroid scan. Skull x-ray showed osteolytic lesion mostly this is:",
+   "text": "A 45-year-old female presented to the surgical clinic complaining of difficulty in swallowing. On examination a single nodule was palpated in her thyroid gland which was confirmed to be a solitary nodule with no uptake by thyroid scan. Skull x-ray showed osteolytic lesion mostly this is:",
    "choices": [
     "Anaplastic carcinoma",
     "Medullary carcinoma",
@@ -17996,7 +18015,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 74-year-old woman with thyroid cancer is admitted due to shortnessof breath. What is the best investigation to assess for possiblecompression of the upper airways?",
+   "text": "A 74-year-old woman with thyroid cancer is admitted due to shortness of breath. What is the best investigation to assess for possible compression of the upper airways?",
    "choices": [
     "Arterial blood gases",
     "Forced vital capacity",
@@ -18190,7 +18209,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Which of the following is false:regarding medullary carcinomaof thyroid?",
+   "text": "Which of the following is false: regarding medullary carcinoma of thyroid?",
    "choices": [
     "Cervical lymphadenopathy",
     "High serum calcitonin",
@@ -18559,7 +18578,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 23-year-old man presents to the clinic complaining of a lump at the base of his neck. He has noticed that this has become particularly prominent with swallowing and has grownsignificantly over the past 8 weeks. There is also a problem with diarrhoea over the past fewmonths.Clinical examination reveals a thyroid nodule. On further questioning, it transpires that hismother died during a thyroidectomy some years ago.Investigations:Investigation | Result | Normal valuesHaemoglobin (Hb) | 121 g/dl. | 13.5 17.5 g/dl-White cell count (WCC) | 54 × 109/l. | 4.0 - 11.0 × 10 9/lPlatelets (PLT) | 203 × 109/l | 150 - 400 × 109/lSodium (Na+) | 140 mmol/l | 135 145 mmol/l-Potassium (K+) | 52 mmol/l. | 3.5 5.0 mmol/l-Creatinine (Cr) | 110 µmol/l | 50 120 µmol/l-Corrected calcium (Ca2+) | 285 mmol/l. | 2.2 2.7 mmol/l-Ret oncogene | positive | Which of the following is the most likely diagnosis?",
+   "text": "A 23-year-old man presents to the clinic complaining of a lump at the base of his neck. He has noticed that this has become particularly prominent with swallowing and has grown significantly over the past 8 weeks. There is also a problem with diarrhoea over the past few months. Clinical examination reveals a thyroid nodule. On further questioning, it transpires that his mother died during a thyroidectomy some years ago. Investigations: Investigation | Result | Normal values Haemoglobin (Hb) | 121 g/dl. | 13.5 17.5 g/dl - White cell count (WCC) | 54 × 109/l. | 4.0 - 11.0 × 10 9/l Platelets (PLT) | 203 × 109/l | 150 - 400 × 109/l Sodium (Na+) | 140 mmol/l | 135 145 mmol/l - Potassium (K+) | 52 mmol/l. | 3.5 5.0 mmol/l - Creatinine (Cr) | 110 µmol/l | 50 120 µmol/l - Corrected calcium (Ca2+) | 285 mmol/l. | 2.2 2.7 mmol/l - Ret oncogene | positive | Which of the following is the most likely diagnosis?",
    "choices": [
     "Papillary thyroid carcinoma",
     "Follicular thyroid carcinoma",
@@ -18632,7 +18651,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 65-year-old woman presents to her general practitioner (GP) complaining of a painlesslump in the lower part of her anterior neck, which was found incidentally asshewas fiddlingaround with her necklace. She is otherwise fit and well and denies any recent chest or throatinfections. She isa non-smoker.On examination, the GP confirms the presence of a solitary hard, immobile lump measuringapproximately 2 cminthe patient’s lower anterior neck, which moves with swallowing andappears to be positioned in the thyroid gland. The patient is apyrexial and the remainder of the physical examination is normal. The patient is referred for a fine needle aspiration biopsyand relevant laboratory studies. The biopsy confirms that the patient has a papillarycarcinoma of the thyroid. She undergoes total thyroidectomy and radioiodine treatment.Which of the following is the most useful marker of tumour recurrence?",
+   "text": "A 65-year-old woman presents to her general practitioner (GP) complaining of a painless lump in the lower part of her anterior neck, which was found incidentally as she was fiddling around with her necklace. She is otherwise fit and well and denies any recent chest or throat infections. She is a non-smoker. On examination, the GP confirms the presence of a solitary hard, immobile lump measuring approximately 2 cm in the patient’s lower anterior neck, which moves with swallowing and appears to be positioned in the thyroid gland. The patient is apyrexial and the remainder of the physical examination is normal. The patient is referred for a fine needle aspiration biopsy and relevant laboratory studies. The biopsy confirms that the patient has a papillary carcinoma of the thyroid. She undergoes total thyroidectomy and radioiodine treatment. Which of the following is the most useful marker of tumour recurrence?",
    "choices": [
     "Alkaline phosphatase",
     "Thyroglobulin",
@@ -18697,7 +18716,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 15-year-old boy comes to the office for evaluation of a neck mass. The patient first noticed the mass a 10 month ago and ithas progressively enlarged. He has had no neck pain, fever, or difficulty swallowing or 3 breathing. Examination shows a firm, nontender mass affecting the left thyroid lobe. TSH is within normal 13 limits. Ultrasonography reveals a hypoechoic 2-cm nodule in the upper portion of the left thyroid lobe. EM | Fine-needle biopsy reveals a cluster of large cells with abundant cytoplasm that stain positive for calcitonin. The patient is also found to be positive for a germline RET mutation. A total thyroidectomy is planned. Prior to the surgery, additional testing should be performed to evaluate for an abnormality in which of the following organs? cmeee:",
+   "text": "A 15-year-old boy comes to the office for evaluation of a neck mass. The patient first noticed the mass a 10 month ago and it has progressively enlarged. He has had no neck pain, fever, or difficulty swallowing or 3 breathing. Examination shows a firm, nontender mass affecting the left thyroid lobe. TSH is within normal 13 limits. Ultrasonography reveals a hypoechoic 2-cm nodule in the upper portion of the left thyroid lobe. EM | Fine-needle biopsy reveals a cluster of large cells with abundant cytoplasm that stain positive for calcitonin. The patient is also found to be positive for a germline RET mutation. A total thyroidectomy is planned. Prior to the surgery, additional testing should be performed to evaluate for an abnormality in which of the following organs? cmeee:",
    "choices": [
     "Adrenal cortex",
     "Anterior pituitary",
@@ -18886,7 +18905,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 24-year-old man comes to the office for follow-up of several enlarging thyroid nodules. The patientfirst noted thenod ules 3 months ago and reports no associated painordysp hagia. His medical history isunr emarkab l e, and hisfamily history i s unknown as the patient is adopted. The pati ent is tall with a decreased upper-to-lower-body ratio.Deta iledeyeexamin ationisunremark able, but several nodules consistent with neuromas are noted on his lips andtong u e. Muscul oske letalexam inatio n shows hypermobile joints and prominent kyp h osco liosis. A 3 - c m, smooth,well -healed scar is noted on his right upper arm from a l acera tionsu stained from in a bicycle injury inchil dhoo d.Laboratory tests show normal serum crea tinineand calcium levels and an elevated serum calcitonin level.H i stopat hologic assessment from a biopsy of the thyroid nodules is consistent with medullary thyroid cancer.Which of the followingis the most likely diagnos is for this patient?",
+   "text": "A 24-year-old man comes to the office for follow-up of several enlarging thyroid nodules. The patient first noted the nodules 3 months ago and reports no associated pain or dysphagia. His medical history is unremarkable, and his family history is unknown as the patient is adopted. The patient is tall with a decreased upper-to-lower-body ratio. Detailed eye examination is unremarkable, but several nodules consistent with neuromas are noted on his lips and tongue. Musculoskeletal examination shows hypermobile joints and prominent kyphoscoliosis. A 3-cm, smooth, well-healed scar is noted on his right upper arm from a laceration sustained from in a bicycle injury in childhood. Laboratory tests show normal serum creatinine and calcium levels and an elevated serum calcitonin level. Histopathologic assessment from a biopsy of the thyroid nodules is consistent with medullary thyroid cancer. Which of the following is the most likely diagnosis for this patient?",
    "choices": [
     "Multiple endocrine neoplasia",
     "Ehlers-Danlos syndrome",
@@ -19012,7 +19031,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 24-year-old woman is evaluated for a lump in her neck. She discovered the lump a week ago while showering.The patient feels well and hasno associated pain, fever, night sweats, or weight changes. Her medical history i sun rema rkab l e, although shehas had irregular menses for ayearsince insertion of an intrauterine device. Thep atient does not use tobacco, alcohol, orillicit drugs. Her mother died duringsur gery for thyroid cancer. Bloodpressure is 133/80 mm Hg (normal <120/80 mm Hg) and pulse i s 78/min (normal 60–100/min). On exam in ation, there is a palpa ble 2-cm nodule in the rightthyro idlobe. The remainderof the exam i natio n, including chest, abdomen, extremities, and skin, is norma l.Serum TSH and calcium levels are normal and calcitonin is elevated. Ultraso und -gui ded aspir ation biopsy revealsm align ant cells. Which of the following tests is the best next step in evaluation of this patient?",
+   "text": "A 24-year-old woman is evaluated for a lump in her neck. She discovered the lump a week ago while showering. The patient feels well and has no associated pain, fever, night sweats, or weight changes. Her medical history is unremarkable, although she has had irregular menses for a year since insertion of an intrauterine device. The patient does not use tobacco, alcohol, or illicit drugs. Her mother died during surgery for thyroid cancer. Blood pressure is 133/80 mm Hg (normal <120/80 mm Hg) and pulse is 78/min (normal 60–100/min). On examination, there is a palpable 2-cm nodule in the right thyroid lobe. The remainder of the examination, including chest, abdomen, extremities, and skin, is normal. Serum TSH and calcium levels are normal and calcitonin is elevated. Ultrasound-guided aspiration biopsy reveals malignant cells. Which of the following tests is the best next step in evaluation of this patient?",
    "choices": [
     "Aldosterone-renin activity ratio",
     "Late-night salivary cortisol",
@@ -19485,7 +19504,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 33-year-old woman with a history of Graves’ disease is referred for thyroidectomy. You are counselling her ast othe risks of surgery. Which of the following is the most likely postoperative complication?",
+   "text": "A 33-year-old woman with a history of Graves’ disease is referred for thyroidectomy. You are counselling her as to the risks of surgery. Which of the following is the most likely postoperative complication?",
    "choices": [
     "Bleeding",
     "Transient hypoparathyroidism",
@@ -19583,7 +19602,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "@ max Goer wasreivetiasie scisuce sera ceees pend me/ ssinin2sec20. A33-year-old woman comes to the physician because of a 2-week history of fatigue, difficulty swallowing, and paresthesias of her lips and fingers. She also has had episodes of painful wristspasms during this period. She has Graves disease and underwent a surgical procedure to remove part of her thyroid gland 3 weeks ago. Her only medication is low-dose propranolol. Vitalsigns are normal. Physical examination shows no abnormalities except for a well-healing incision on the neck. An ECG shows a prolonged QT interval. Which of the following is the mostlikely cause of this patient's new symptoms?",
+   "text": "A 33-year-old woman comes to the physician because of a 2-week history of fatigue, difficulty swallowing, and paresthesias of her lips and fingers. She also has had episodes of painful wrist spasms during this period. She has Graves disease and underwent a surgical procedure to remove part of her thyroid gland 3 weeks ago. Her only medication is low-dose propranolol. Vital signs are normal. Physical examination shows no abnormalities except for a well-healing incision on the neck. An ECG shows a prolonged QT interval. Which of the following is the most likely cause of this patient's new symptoms?",
    "choices": [
     "Hypoparathyroidism",
     "Adverse effect of propranolol",
@@ -19674,7 +19693,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A physician Is asked to evalu ate a 5-year-old girl who has developed a mass In her neck. During the intervi ew, helearns that the mass appeared within the past few months and has been e nl arging; however, it causes no pain or discomfort. T he mass is in the midlin eofthe neck just inferior to the hyoid bone. Laboratory tests reveal a triiodothyronine level of 150 ng/dl, a thyroxine level of 8.011g/d L, anda thyroid- stimulating hormone level of 1 IJU/ml. A CT scan of the neck is performed and the doctor recommends surgery. Which of the following is the most likely diagnosis?",
+   "text": "A physician Is asked to evaluate a 5-year-old girl who has developed a mass In her neck. During the interview, he learns that the mass appeared within the past few months and has been enlarging; however, it causes no pain or discomfort. The mass is in the midline of the neck just inferior to the hyoid bone. Laboratory tests reveal a triiodothyronine level of 150 ng/dl, a thyroxine level of 8.011g/dL, and a thyroid-stimulating hormone level of 1 IJU/ml. A CT scan of the neck is performed and the doctor recommends surgery. Which of the following is the most likely diagnosis?",
    "choices": [
     "Branchial cleft cyst",
     "Dermoid cyst",
@@ -19925,7 +19944,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 31- year -o l d woman comes to the office with a 3-month history of palpitations and weight loss. She weighs 110kg (243 l b); 3 months ago, she weighed 118 kg (260 lb). The reisno associated dy sphag i a, neck pain, orhoars e ness, andherme nstr u al periods have been regular. The patient was previously healthyandherfamil yhistory is unremarkable. She does not use tobacco or alcohol. The patient i s sexua ll y active with one partner anduses a barrier method for cont r acept i on. Temperature is 36.7 C (98.1 F), blood pre ssureis 140/90 mm Hg, pulse i s102/m i n, and respirations are 20/min. The thyroid gland cannot be clearly felton examination due to body habitus.Ocular examination is unremarkable. Laboratory tests show an elevated serum free trii odothy ronineandthyroxi neand low TSH. Aurine pregnancy test is negat iv e. Radioactive iodine scan reveals uptake of tracer only in the rightthyro idlobe, as shown in the image below.Which of the followingpr ocesses is responsible for this patient's elevated thyroid hormone levels?",
+   "text": "A 31-year-old woman comes to the office with a 3-month history of palpitations and weight loss. She weighs 110 kg (243 lb); 3 months ago, she weighed 118 kg (260 lb). There is no associated dysphagia, neck pain, or hoarseness, and her menstrual periods have been regular. The patient was previously healthy and her family history is unremarkable. She does not use tobacco or alcohol. The patient is sexually active with one partner and uses a barrier method for contraception. Temperature is 36.7 C (98.1 F), blood pressure is 140/90 mm Hg, pulse is 102/min, and respirations are 20/min. The thyroid gland cannot be clearly felt on examination due to body habitus. Ocular examination is unremarkable. Laboratory tests show an elevated serum free triiodothyronine and thyroxine and low TSH. A urine pregnancy test is negative. Radioactive iodine scan reveals uptake of tracer only in the right thyroid lobe, as shown in the image below. Which of the following processes is responsible for this patient's elevated thyroid hormone levels?",
    "choices": [
     "Antibody-stimulated thyroid hormone production",
     "Autonomous thyroid hormone production",
@@ -20816,7 +20835,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 45-year-old woman comes to the office due to progressive fatigue, myalgias, andmu scle weakness in both lower e xtr emities for the past month. She has slight difficulty getting up from a chair, and has weak ness and cra mpingin the legs after walking a short distance. The patient's other medical problemsincludehypert ension, which is treated with lisinopril. She does not use tobacco, alcohol, orillicit dru gs. Blood pressure is 140/80 mm Hg (normal <120/80 mm Hg), pulse is 64/min (normal 60–100/min), andre spirat ionsare 14/min (normal 12–20/min). Examination shows mildly decreased strength in the proximal muscles of the lower extremities with sluggish ankle jerksbilaterally. Laboratory tests show a normal erythrocyte sedimentation rate and an ele vatedserum creatine kinase level. Serum sodium, glu cose, potassium, and creat ininearenormal. Which of the followingis the most appropr iate next step in management of this patient?",
+   "text": "A 45-year-old woman comes to the office due to progressive fatigue, myalgias, and muscle weakness in both lower extremities for the past month. She has slight difficulty getting up from a chair, and has weakness and cramping in the legs after walking a short distance. The patient's other medical problems include hypertension, which is treated with lisinopril. She does not use tobacco, alcohol, or illicit drugs. Blood pressure is 140/80 mm Hg (normal <120/80 mm Hg), pulse is 64/min (normal 60–100/min), and respirations are 14/min (normal 12–20/min). Examination shows mildly decreased strength in the proximal muscles of the lower extremities with sluggish ankle jerks bilaterally. Laboratory tests show a normal erythrocyte sedimentation rate and an elevated serum creatine kinase level. Serum sodium, glucose, potassium, and creatinine are normal. Which of the following is the most appropriate next step in management of this patient?",
    "choices": [
     "Antinuclear antibody test",
     "Discontinuation of lisinopril",
@@ -21318,7 +21337,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 49-year-old woman is investigated for thyrotoxicosis. On examinationshe is noted to have a goitre containing multiple irregular nodules.Nuclear scintigraphy with technetium 99m reveals patchy uptake. Whatis the treatment of choice?",
+   "text": "A 49-year-old woman is investigated for thyrotoxicosis. On examination she is noted to have a goitre containing multiple irregular nodules. Nuclear scintigraphy with technetium 99m reveals patchy uptake. What is the treatment of choice?",
    "choices": [
     "Corticosteroids",
     "Block-and-replace regime",
@@ -21576,7 +21595,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 25-year-old woman has had a 10 kg weight loss over the past 6 months, despite the fact that she is not dieting or trying to lose weight. On physical examinationshe appears anxious and worried. Her hands are warm and tremulous. Vitalsigns show her temperature to be 37.4 C, pulse 105/minute, respirations23/minute, and blood pressure 135/75 mm Hg. Serum electrolytes include sodium141 mmol/L, potassium 4.2 mmol/L, glucose 78 mg/dL, and creatinine 0.8 mg/dL.Which of the following laboratory test findings is most likely to be present in thiswoman?A Plasma cortisol of 40 microgm/dL at 8 amB Serum antinuclear antibody of 1:256C Urinary free catecholamines of 500 microgm/24 hrD Serum gastrin of 200 pg/mLE Serum total thyroxine of 14 microgm/dL(E) CORRECT. She is manifesting the signs and symptoms of hyperthyroidism andprobably has Graves disease.",
+   "text": "A 25-year-old woman has had a 10 kg weight loss over the past 6 months, despite the fact that she is not dieting or trying to lose weight. On physical examination she appears anxious and worried. Her hands are warm and tremulous. Vital signs show her temperature to be 37.4 C, pulse 105/minute, respirations 23/minute, and blood pressure 135/75 mm Hg. Serum electrolytes include sodium 141 mmol/L, potassium 4.2 mmol/L, glucose 78 mg/dL, and creatinine 0.8 mg/dL. Which of the following laboratory test findings is most likely to be present in this woman? A Plasma cortisol of 40 microgm/dL at 8 am B Serum antinuclear antibody of 1:256 C Urinary free catecholamines of 500 microgm/24 hr D Serum gastrin of 200 pg/mL E Serum total thyroxine of 14 microgm/dL (E) CORRECT. She is manifesting the signs and symptoms of hyperthyroidism and probably has Graves disease.",
    "choices": [
     "Serum TSH of 25 mU/L",
     "Serum total thyroxine of 14 µg/dL",
@@ -21697,7 +21716,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Apatient with a 6-month history of heat intolerance, fatigue, episodes of tachycardia, and weight loss has a diffusely enlarged thyroid gland. Serum concentrations of tricodothyronine (T) and thyroxine (T,) are increased; thyroid-stimulating hormone isdecreased. Which of the following is the most likely diagnosis?",
+   "text": "A patient with a 6-month history of heat intolerance, fatigue, episodes of tachycardia, and weight loss has a diffusely enlarged thyroid gland. Serum concentrations of tricodothyronine (T) and thyroxine (T,) are increased; thyroid-stimulating hormone is decreased. Which of the following is the most likely diagnosis?",
    "choices": [
     "Autoimmune thyroid hyperplasia",
     "Granulomatous thyroiditis",
@@ -22124,7 +22143,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 34-year-old man presents to his General Practitioner (GP) with intermittent double visionon upward gaze. He has diplopia, maximal on looking left and looking down. Examining hiseyes, he has mild bilateral proptosis and the eyes look normal, looking straight ahead.However, all other eye movements appear normal. His pupils are equal and have normal directand consensual light reflexes. He is able to look up and down for 10 seconds without tiring.Investigations reveal the following:Investigation | Result | Normal ValueFree Thyroxine FT4 | 18 pmol/l | 11 –22 pmol/lThyroid Stimulating Hormone (TSH) | 32 µU/l. | 0.17 –3.2 µU/lWhat is the most likely diagnosis?",
+   "text": "A 34-year-old man presents to his General Practitioner (GP) with intermittent double vision on upward gaze. He has diplopia, maximal on looking left and looking down. Examining his eyes, he has mild bilateral proptosis and the eyes look normal, looking straight ahead. However, all other eye movements appear normal. His pupils are equal and have normal direct and consensual light reflexes. He is able to look up and down for 10 seconds without tiring. Investigations reveal the following: Investigation | Result | Normal Value Free Thyroxine FT4 | 18 pmol/l | 11 –22 pmol/l Thyroid Stimulating Hormone (TSH) | 32 µU/l. | 0.17 –3.2 µU/l What is the most likely diagnosis?",
    "choices": [
     "Thyroid eye disease of Graves",
     "Myasthenia gravis",
@@ -22187,7 +22206,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 45-year-old woman with Graves' disease comes for review. She hasrecently been diagnosed with thyroid eye disease and is beingconsidered for radiotherapy. Over the past three days her right eye hasbecome red and painful. On examination there is proptosis anderythema of the right eye. Visual acuity is 6/9 in both eyes. Whatcomplication is she most likely to have developed?",
+   "text": "A 45-year-old woman with Graves' disease comes for review. She has recently been diagnosed with thyroid eye disease and is being considered for radiotherapy. Over the past three days her right eye has become red and painful. On examination there is proptosis and erythema of the right eye. Visual acuity is 6/9 in both eyes. What complication is she most likely to have developed?",
    "choices": [
     "Carbimazole",
     "Radioactive iodine",
@@ -22245,7 +22264,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 24-year-old woman presents to her General Practitioner (GP) for a 10 week early pregnancycheck. She complains of mild lethargy and he checks some thyroid function tests. Herthyroid-stimulating hormone (TSH) is 0.3 mU/l (normal range: 0.4–5 mU/l) and free thyroxine(T) is 27 pmol/l (normal range: 10–22 pmol/l). He diagnoses thyrotoxicosis and refers her toyou for an opinion.What is the best next management step for this patient?",
+   "text": "A 24-year-old woman presents to her General Practitioner (GP) for a 10 week early pregnancy check. She complains of mild lethargy and he checks some thyroid function tests. Her thyroid-stimulating hormone (TSH) is 0.3 mU/l (normal range: 0.4–5 mU/l) and free thyroxine(T) is 27 pmol/l (normal range: 10–22 pmol/l). He diagnoses thyrotoxicosis and refers her to you for an opinion. What is the best next management step for this patient?",
    "choices": [
     "Observation",
     "Start carbimazole",
@@ -22308,7 +22327,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A pregnant lady at 26 weeks of gestation has clinical evidence of hyperthyroidism. She is veryanxious and complains of palpitations, heat intolerance and difficulty maintaining her weightduring the pregnancy. On examination herBP is 120/70 mmHg (normal <120/80 mm Hg), with pulse 95/min (normal 60–100/min) regular.There is no obvious goitre on neck examination.Investigations:Investigation | Result | Normal valueHaemoglobin | 119 g/dl. | 11.5 –15.5 g/dlWhite cell count (WCC) | 54 × 109/l. | 4 –11 × 109/lPlatelets | 190 × 109/l | 150 –400 × 109/lSodium (Na+) | 140 mmol/l | 135 –145 mmol/lPotassium (K+) | 45 mmol/l. | 3.5 –5.0 mmol/lCreatinine | 94 µmol/l | 50 –120 µmol/lThyroid stimulating hormone (TSH) | <005 µU/l. | 0.17 –3.2 µU/lAnti -thyroid antibodies | +ve | How would you propose to manage her?",
+   "text": "A pregnant lady at 26 weeks of gestation has clinical evidence of hyperthyroidism. She is very anxious and complains of palpitations, heat intolerance and difficulty maintaining her weight during the pregnancy. On examination her BP is 120/70 mmHg (normal <120/80 mm Hg), with pulse 95/min (normal 60–100/min) regular. There is no obvious goitre on neck examination. Investigations: Investigation | Result | Normal value Haemoglobin | 119 g/dl. | 11.5 –15.5 g/dl White cell count (WCC) | 54 × 109/l. | 4 –11 × 109/l Platelets | 190 × 109/l | 150 –400 × 109/l Sodium (Na+) | 140 mmol/l | 135 –145 mmol/l Potassium (K+) | 45 mmol/l. | 3.5 –5.0 mmol/l Creatinine | 94 µmol/l | 50 –120 µmol/l Thyroid stimulating hormone (TSH) | <005 µU/l. | 0.17 –3.2 µU/l Anti-thyroid antibodies | +ve | How would you propose to manage her?",
    "choices": [
     "Propylthiouracil",
     "Radioactive iodine",
@@ -22371,7 +22390,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "You are asked toseea 24-year-old woman who is 8 weeks into her first pregnancy. She has suffered vomiting and is finding it difficult to maintain weight.On examination, she is clearly anxious. HerBP is 105/70 (normal <120/80 mm Hg), with pulse 75 (normal 60–100/min) and regular. Her BMI isInvestigations:Investigation | Result | Normal valuesHaemoglobin (Hb) | 119 g/dl. | 13.5 17.5 g/dl-White cell count (WCC) | 57 × 109/l. | 4.0 - 11.0 × 10 9/lPlatelets (PLT) | 212 × 109/l | 150 - 400 × 109/lSodium (Na+) | 144 mmol/l | 135 145 mmol/l-Potassium (K+) | 34 mmol/l. | 3.5 5.0 mmol/l-Creatinine (Cr) | 100 µmol/l | 50 120 µmol/l-Glucose | 48 mmol/l. | 3.9 7.1 mmol/l-Total Thyroxine (T4) | 185 nmol/l | 58 174 nmol/l-Thyroid -stimulating hormone (TSH) | 06 mu/l. | 0.4 5.0 mu/l-Which of the following is the most appropriate management in this case?",
+   "text": "You are asked to see a 24-year-old woman who is 8 weeks into her first pregnancy. She has suffered vomiting and is finding it difficult to maintain weight. On examination, she is clearly anxious. Her BP is 105/70 (normal <120/80 mm Hg), with pulse 75 (normal 60–100/min) and regular. Her BMI is Investigations: Investigation | Result | Normal values Haemoglobin (Hb) | 119 g/dl. | 13.5 17.5 g/dl - White cell count (WCC) | 57 × 109/l. | 4.0 - 11.0 × 10 9/l Platelets (PLT) | 212 × 109/l | 150 - 400 × 109/l Sodium (Na+) | 144 mmol/l | 135 145 mmol/l - Potassium (K+) | 34 mmol/l. | 3.5 5.0 mmol/l - Creatinine (Cr) | 100 µmol/l | 50 120 µmol/l - Glucose | 48 mmol/l. | 3.9 7.1 mmol/l - Total Thyroxine (T4) | 185 nmol/l | 58 174 nmol/l - Thyroid-stimulating hormone (TSH) | 06 mu/l. | 0.4 5.0 mu/l - Which of the following is the most appropriate management in this case?",
    "choices": [
     "Start carbimazole",
     "Start PTU",
@@ -22434,7 +22453,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 29-year-old woman who is 30 weeks’ pregnant comes to the Endocrine Clinic for review.She has found it increasingly difficult to maintain her weight during the past few weeks, and has been suffering from palpitations and anxiety. She hasno past medical history of note.Examination reveals aBPof 122/72 mmHg (normal <120/80 mm Hg), with pulse 88/min (normal 60–100/min) and regular. She has a fineresting tremor and a smooth, non-tender goitre.Investigations:Investigation | Result | Normal valuesHaemoglobin (Hb) | 119 g/dl. | 13.5 17.5 g/dl-White cell count (WCC) | 71 × 109/l. | 4.0 - 11.0 × 10 9/lPlatelets (PLT) | 181 × 109/l | 150 - 400 × 109/lSodium (Na+) | 137 mmol/l | 135 145 mmol/l-Potassium (K+) | 43 mmol/l. | 3.5 5.0 mmol/l-Creatinine (Cr) | 84 µmol/l | 50 120 µmol/l-Glucose | 48 mmol/l. | 3.9 7.1 mmol/l-Thyroid -stimulating hormone (TSH) | < 005 mu/l. | 0.4 5.0 mu/l-Free thyroxine (T4) | 20 pmol/l | 6.5 13.0 pmol/l-Anti -thyroid antibody | + | Which of the following is the most appropriate intervention?",
+   "text": "A 29-year-old woman who is 30 weeks’ pregnant comes to the Endocrine Clinic for review. She has found it increasingly difficult to maintain her weight during the past few weeks, and has been suffering from palpitations and anxiety. She has no past medical history of note. Examination reveals a BP of 122/72 mmHg (normal <120/80 mm Hg), with pulse 88/min (normal 60–100/min) and regular. She has a fine resting tremor and a smooth, non-tender goitre. Investigations: Investigation | Result | Normal values Haemoglobin (Hb) | 119 g/dl. | 13.5 17.5 g/dl - White cell count (WCC) | 71 × 109/l. | 4.0 - 11.0 × 10 9/l Platelets (PLT) | 181 × 109/l | 150 - 400 × 109/l Sodium (Na+) | 137 mmol/l | 135 145 mmol/l - Potassium (K+) | 43 mmol/l. | 3.5 5.0 mmol/l - Creatinine (Cr) | 84 µmol/l | 50 120 µmol/l - Glucose | 48 mmol/l. | 3.9 7.1 mmol/l - Thyroid-stimulating hormone (TSH) | < 005 mu/l. | 0.4 5.0 mu/l - Free thyroxine (T4) | 20 pmol/l | 6.5 13.0 pmol/l - Anti-thyroid antibody | + | Which of the following is the most appropriate intervention?",
    "choices": [
     "Propylthiouracil",
     "Carbimazole",
@@ -22683,7 +22702,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 23-year-old pregnant woman in her firsttrimester develops hyperthyroidism. Which of the following treatments is contraindicated?",
+   "text": "A 23-year-old pregnant woman in her first trimester develops hyperthyroidism. Which of the following treatments is contraindicated?",
    "choices": [
     "Thyroid surgery",
     "Propylthiouracil (PTU)",
@@ -23173,7 +23192,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 44-year-old woman comes to the clinic complaining of shortness of breath and a chokingsensation, particularly when she goes to bed. She has seen the GP, been given a diagnosis of anxiety and started on sertraline. On examination, shehas an obvious multinodular goitre.Investigations reveal the following:Investigation | Result | Normal valuesHaemoglobin (Hb) | 127 g/dl. | 11.5 –15.5 g/dlWhite cell count (WCC) | 59 × 109/l. | 4.0 –11.0 × 10 9/lPlatelets (PLT) | 194 × 109/l | 150 –400 ×109/lSodium (Na+) | 139 mmol/l | 135 145–mmol/lPotassium (K+) | 49 mmol/l. | 35 50. –.mmol/lCreatinine (Cr) | 100 µmol/l | 50 –120 µmol/lThyroid -stimulating hormone(TSH) | 35 U/l (normal 0.4-4.5 mU/L). | < 05 45 U/l. –.Ultrasound (US) | Multiple thyroid nodules very large,goitre | Which of the following is the most appropriate therapy?",
+   "text": "A 44-year-old woman comes to the clinic complaining of shortness of breath and a choking sensation, particularly when she goes to bed. She has seen the GP, been given a diagnosis of anxiety and started on sertraline. On examination, she has an obvious multinodular goitre. Investigations reveal the following: Investigation | Result | Normal values Haemoglobin (Hb) | 127 g/dl. | 11.5 –15.5 g/dl White cell count (WCC) | 59 × 109/l. | 4.0 –11.0 × 10 9/l Platelets (PLT) | 194 × 109/l | 150 –400 ×109/l Sodium (Na+) | 139 mmol/l | 135 145–mmol/l Potassium (K+) | 49 mmol/l. | 35 50. –. mmol/l Creatinine (Cr) | 100 µmol/l | 50 –120 µmol/l Thyroid-stimulating hormone (TSH) | 35 U/l (normal 0.4-4.5 mU/L). | < 05 45 U/l. –. Ultrasound (US) | Multiple thyroid nodules very large, goitre | Which of the following is the most appropriate therapy?",
    "choices": [
     "Sub-total thyroidectomy",
     "Radioiodine",
@@ -23502,7 +23521,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "Movement of a neck swelling with deglutition is dueto attachment of the swelling to:",
+   "text": "Movement of a neck swelling with deglutition is due to attachment of the swelling to:",
    "choices": [
     "Skin of the neck",
     "Superficial fascia of the neck",
@@ -23676,7 +23695,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 25-year-old woman comes to the physicianwitha 3-month h i story of weight l oss, irritabil ity, insomn i a, and palpit atio n s. Her past medical history isinsigni fican t. She is not currently taking any med icati ons. The pati ent does not use tobacco, alcoho l, orillicit drugs. Blood press ureis 155170 mmHg and pulse is 110/min (normal 60–100/min). Physical examination shows lid ret rac tion, dry skin, and fine tremor of the hands. Which of the following is the most likely cause of this patient ' s hypertension?",
+   "text": "A 25-year-old woman comes to the physician with a 3-month history of weight loss, irritability, insomnia, and palpitations. Her past medical history is insignificant. She is not currently taking any medications. The patient does not use tobacco, alcohol, or illicit drugs. Blood pressure is 155170 mmHg and pulse is 110/min (normal 60–100/min). Physical examination shows lid retraction, dry skin, and fine tremor of the hands. Which of the following is the most likely cause of this patient's hypertension?",
    "choices": [
     "Elevated serum calcium level",
     "Increased peripheral vascular resistance",
@@ -24267,7 +24286,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 36-year-old woman comes to the physician for a routine health exam in ation. She hasno complaints or previous medical problems and takes no medications. She does not use tobacco, a l coho l, orillicitdr ugs. Her menstrualcycles are reg ular. The patient is an architect atal oca l constr u ctio n firm. She has had no exposure to excessive radiationin the past. Her family history is negat ive for thyroid probl ems. Her temperature i s 36. 7 ° C (98 ° F), blood pressure is 130/80 mm Hg (normal <120/80 mm Hg), pulse is 80/min (normal 60–100/min), and resp irati ons are 16/min (normal 12–20/min). Examinationof the neck shows a 2x2 cm, d i screte, nontender, firm, and mobile nod ulein the left thyroid lobe without cervical lymphadenopathy. The remainder of the examination iswithin normal limits. Whichof the following is the most app ropri ate initial step in evaluation of this patient?",
+   "text": "A 36-year-old woman comes to the physician for a routine health examination. She has no complaints or previous medical problems and takes no medications. She does not use tobacco, alcohol, or illicit drugs. Her menstrual cycles are regular. The patient is an architect at a local construction firm. She has had no exposure to excessive radiation in the past. Her family history is negative for thyroid problems. Her temperature is 36.7 °C (98 °F), blood pressure is 130/80 mm Hg (normal <120/80 mm Hg), pulse is 80/min (normal 60–100/min), and respirations are 16/min (normal 12–20/min). Examination of the neck shows a 2x2 cm, discrete, nontender, firm, and mobile nodule in the left thyroid lobe without cervical lymphadenopathy. The remainder of the examination is within normal limits. Which of the following is the most appropriate initial step in evaluation of this patient?",
    "choices": [
     "Computed tomography scan of the neck",
     "Fine-needle aspiration biopsy",
@@ -25062,7 +25081,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 54-year-old woman comes to visit her daughter who isa student in London. She currently lives in central Africa and has had problems with lethargy and tiredness for some time.",
+   "text": "A 54-year-old woman comes to visit her daughter who is a student in London. She currently lives in central Africa and has had problems with lethargy and tiredness for some time.",
    "choices": [
     "Hashimoto thyroiditis",
     "Iodine deficiency",
@@ -25308,7 +25327,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 29-year-old woman, whohasa 10-month-old baby, presents with neck and throat pain over the area of her thyroid. She tells you that she had a flu-like illness a week or so before the pain began. Her partner, who also attends the appointment, tells you shehas been nervous and agitated over the past week. On examination, there is a mild diffuse enlargement of the thyroid gland and itis tender to palpation. HerBP is 141/82 mmHg (normal <120/80 mm Hg), and her pulse is 85/min (normal 60–100/min) and regular at rest. She has a slight tremor. Investigations reveal the following:",
+   "text": "A 29-year-old woman, who has a 10-month-old baby, presents with neck and throat pain over the area of her thyroid. She tells you that she had a flu-like illness a week or so before the pain began. Her partner, who also attends the appointment, tells you she has been nervous and agitated over the past week. On examination, there is a mild diffuse enlargement of the thyroid gland and it is tender to palpation. Her BP is 141/82 mmHg (normal <120/80 mm Hg), and her pulse is 85/min (normal 60–100/min) and regular at rest. She has a slight tremor. Investigations reveal the following:",
    "choices": [
     "Hashimoto's",
     "Riedel's",
@@ -25409,7 +25428,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 43-year-old man presents tohisGP with tiredness, low mood andunintentional weight gain of 13kg over the past 4 months. Prior tofeeling like this he recalls having a flu-like illness following which he had a two-week period of feeling very anxious, shaky and energetic. Hewonders if this is connected.On examination hehasa heart rate of 68 bpm, his blood pressure is147/83 mmHg and his temperature is 37.1°:",
+   "text": "A 43-year-old man presents to his GP with tiredness, low mood and unintentional weight gain of 13kg over the past 4 months. Prior to feeling like this he recalls having a flu-like illness following which he had a two-week period of feeling very anxious, shaky and energetic. He wonders if this is connected. On examination he has a heart rate of 68 bpm, his blood pressure is147/83 mmHg and his temperature is 37.1°:",
    "choices": [
     "De Quervain's thyroiditis",
     "Grave's disease",
@@ -25776,7 +25795,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 34-yea r -old woman comes to the office dueto fat igue for the last several months. She becomes tired easily after walking short d i stances. She also has di ffic ulty com bing her hairdueto problems holding her hands over her head for long p e riods. The patient reports anxiety, irri tab ility, and an unintentional weight loss of 3.6 kg (8 lb) over the last 2 months. She hasno fever or loss ofappetite. The pati ent does not use tobacco or alcohol. Her father died ofastrokeat age 54 and her mother hasdi abetes mellitus. Onexa min ation, the patient is afebrile with a pulse of 115/mi n (normal 60–100/min). Car diac examination reveals reg ular tachycardia with no murmur. The lungs are clear toau scultation. The patient's gait i s normal, but she awkwardly drops into the chair when asked to slowly sit. The patient appears to have decreased muscle mass in her shoulders, but her muscles are nontender. Deep tendon reflexes are normal. Which of the following is the most likely cause of this patient's symptoms?",
+   "text": "A 34-year-old woman comes to the office due to fatigue for the last several months. She becomes tired easily after walking short distances. She also has difficulty combing her hair due to problems holding her hands over her head for long periods. The patient reports anxiety, irritability, and an unintentional weight loss of 3.6 kg (8 lb) over the last 2 months. She has no fever or loss of appetite. The patient does not use tobacco or alcohol. Her father died of a stroke at age 54 and her mother has diabetes mellitus. On examination, the patient is afebrile with a pulse of 115/min (normal 60–100/min). Cardiac examination reveals regular tachycardia with no murmur. The lungs are clear to auscultation. The patient's gait is normal, but she awkwardly drops into the chair when asked to slowly sit. The patient appears to have decreased muscle mass in her shoulders, but her muscles are nontender. Deep tendon reflexes are normal. Which of the following is the most likely cause of this patient's symptoms?",
    "choices": [
     "Basal ganglia lesion",
     "Thyroid disease",
@@ -25903,7 +25922,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "A 65-year-old woman comes to the Endocrinology Clinic complaining of weakness and lethargy. She has gained 5 kg in weight over the past four months and is finding it increasingly difficult to look after her granddaughter, particularly when she needs togoup and down the stairs. There is a history of mild hypertension which is managed with indapamide, but she is otherwise well. On examination, her blood pressure is 145/92 mmHg (normal <120/80 mm Hg); her pulse is 55 beats per minute (normal 60–100/min) and regular. She appears to have thinning hair. Her body mass index (BMI) is 32 kg/m (normal 18.5–24.9 kg/m²)and neurological examination reveals evidence of proximal myopathy. Investigations reveal the following:",
+   "text": "A 65-year-old woman comes to the Endocrinology Clinic complaining of weakness and lethargy. She has gained 5 kg in weight over the past four months and is finding it increasingly difficult to look after her granddaughter, particularly when she needs to go up and down the stairs. There is a history of mild hypertension which is managed with indapamide, but she is otherwise well. On examination, her blood pressure is 145/92 mmHg (normal <120/80 mm Hg); her pulse is 55 beats per minute (normal 60–100/min) and regular. She appears to have thinning hair. Her body mass index (BMI) is 32 kg/m (normal 18.5–24.9 kg/m²)and neurological examination reveals evidence of proximal myopathy. Investigations reveal the following:",
    "choices": [
     "Muscle biopsy",
     "Prolactin",
@@ -26133,7 +26152,7 @@ const MASTER = [
    }
   ],
   "ai": {
-   "text": "T 4, serum 20 µg/dlThyroid-stimulatingimmunoglobulins 340% (normal: <110%) Treatment o pt ions arediscu ssed with the patient, and she elects to proceed with radioiodine therapy. Which of the following is the most likely o u tcome after treatment in this patient?",
+   "text": "T4, serum 20 µg/dl Thyroid-stimulating immunoglobulins 340% (normal: <110%) Treatment options are discussed with the patient, and she elects to proceed with radioiodine therapy. Which of the following is the most likely outcome after treatment in this patient?",
    "choices": [
     "Disappearance of thyroid-stimulating immunoglobulins",
     "Development of hypothyroidism over months to years",
@@ -30309,11 +30328,13 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
       "",
       "HOW YOU TALK (always):",
       "- short, fun, alive: a clever friend on a study break, never a textbook",
-      "- reply in POINTS: 2-6 bullets starting with '- ', one idea each, max 2 short lines per bullet",
+      "- default shape: short POINTS (2-6 bullets starting with '- ', one idea each, max 2 short lines per bullet)",
+      "- BUT when the student asks you to explain freely / as needed (\u0627\u0634\u0631\u062d \u0628\u0631\u0627\u062d\u062a\u0643 / \u0639\u0644\u0649 \u0642\u062f \u0645\u0627 \u0627\u0644\u0633\u0624\u0627\u0644 \u0645\u062d\u062a\u0627\u062c), YOU choose the shape and the length the question really needs (a few lines, points, a tiny comparison…) — no fixed sections like 'explanation' / 'trap', no fixed number of points",
       "- **bold** the 1-2 magic words of each bullet; sprinkle tasteful emojis",
       "- never a condensed wall of text, never a lecture",
       "- the student may write broken English or Arabic words — decode the meaning kindly, reply in simple Egyptian Arabic with English medical terms",
       "- explain in EGYPTIAN ARABIC (عامية مصرية) always, but keep EVERY medical term in English — never translate a term to Arabic, never add an Arabic gloss in brackets",
+      "- START EVERY LINE WITH AN ARABIC WORD: every bullet, every paragraph, every heading and the very first line begin with an Arabic word, then the English term (e.g. '- مرض Subacute thyroiditis بيعمل painful goiter…', '- الـTSH واطي جدًا…', '- في الـLab findings: …') — never start a line with an English word, a number, a symbol or an emoji, so the Arabic and the English never get scrambled on screen",
       "",
       "HOW YOU PROVE WHAT YOU SAY (to YOURSELF only):",
       "- check every claim silently against trusted references (Williams, Harrison's, Bailey & Love, Robbins, ATA/AACE/ETA guidelines, PubMed reviews)",
@@ -30557,6 +30578,7 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
       + "'goiter', 'thyroglossal duct cyst', 'Graves disease', 'fine-needle aspiration', 'Hashimoto', 'TSH'. "
       + "NEVER translate a term into Arabic (no \u0639\u0642\u062f\u0629, no \u0627\u0644\u062f\u0631\u0642\u064a\u0629 \u0627\u0644\u062c\u0627\u062d\u0629, no \u0627\u0644\u062a\u0647\u0627\u0628 \u0627\u0644\u063a\u062f\u0629, no Arabic gloss in brackets). "
       + "Only the connective text around the terms is Arabic. "
+      + "START EVERY LINE (every bullet, paragraph and heading, the first line too) WITH AN ARABIC WORD — never with an English word, a number, a symbol or an emoji: '- مرض Graves disease …', '- الـTSH …', '- في الـLab findings …'. "
       + "No references, no citations, no book names, no links \u2014 keep them to yourself.";
   }
 
@@ -30600,6 +30622,10 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
     return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
   }
   try { window.__stripRefs = stripRefs; } catch (e) {}
+  /* كل سطر فيه حرف عربي = RTL (كأنه بادئ بكلمة عربي) عشان العربي والانجليزي مايتلخبطوش — السطر الانجليزي الصافي بس يفضل auto */
+  const AI_AR_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  function aiDir(s) { return AI_AR_RE.test(String(s || "")) ? "rtl" : "auto"; }
+  try { window.__aiDir = aiDir; } catch (e) {}
   function aiMd(src) {
     src = stripRefs(src);
     const lines = String(src).split(/\n/);
@@ -30609,20 +30635,23 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
       if (/^VERDICT\s*:/i.test(t)) continue;
       if (/^(-|\*|•)\s+/.test(t)) {
         if (!inList) { html += "<ul class='ailist'>"; inList = true; }
-        html += "<li dir='auto'>" + aiInline(t.replace(/^(-|\*|•)\s+/, "")) + "</li>";
+        const li = t.replace(/^(-|\*|•)\s+/, "");
+        html += "<li dir='" + aiDir(li) + "'>" + aiInline(li) + "</li>";
       } else if (/^#{1,5}\s+/.test(t)) {
         if (inList) { html += "</ul>"; inList = false; }
-        html += "<div class='aihead' dir='auto'>" + aiInline(t.replace(/^#{1,5}\s+/, "")) + "</div>";
+        const hd = t.replace(/^#{1,5}\s+/, "");
+        html += "<div class='aihead' dir='" + aiDir(hd) + "'>" + aiInline(hd) + "</div>";
       } else if (t === "") {
         if (inList) { html += "</ul>"; inList = false; }
       } else {
         if (inList) { html += "</ul>"; inList = false; }
-        html += "<p class='ailine' dir='auto'>" + aiInline(t) + "</p>";
+        html += "<p class='ailine' dir='" + aiDir(t) + "'>" + aiInline(t) + "</p>";
       }
     }
     if (inList) html += "</ul>";
     return html || "<p class='ailine'>…</p>";
   }
+  try { window.__aiMd = aiMd; } catch (e) {}
   /* wrap every word in a bubble so one click = highlight (like the rest of the page) */
   function aiWrapWords(root) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
@@ -30795,6 +30824,7 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
       const b = el("div", "aichatmsg user");
       b.innerHTML = "<p class='ailine' dir='auto'></p>";
       q1(".ailine", b).textContent = text;
+      q1(".ailine", b).dir = aiDir(text);
       c.msgs.appendChild(b);
       AIChat.scroll(card);
       return b;
@@ -31184,6 +31214,7 @@ var AIHELP_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtUAAAGWCAIAAAA4
       const u = el("div", "aichatmsg user");
       u.innerHTML = "<p class='ailine' dir='auto'></p>";
       q1(".ailine", u).textContent = text;
+      q1(".ailine", u).dir = aiDir(text);
       AITutor.msgs.appendChild(u);
       AITutor.scroll();
       const b = el("div", "aichatmsg ai");
@@ -33548,13 +33579,16 @@ function explainGateHtml(nn) {
   '</div>';
 }
 function aiExplainPrompt(q) {
+  /* «💬 اسأل الـAI» = شرح حر حسب الحاجة — مفيش تقسيم ثابت (شرح / trap / فرق) ولا عدد نقط */
+  const L = "ABCDEFGHIJKLMNOP";
   const right = (q.ans || []).map(function (i) { return q.choices[i]; }).join(" / ");
-  let t = "اشرحلي السؤال ده بسرعة وبالمصري الطبي، من غير ما تطول:\n";
+  let t = "اشرحلي السؤال ده بالمصري الطبي:\n";
   t += "Q: " + (q.text || "") + "\n";
   if (q.choices && q.choices.length)
-    t += "Choices: " + q.choices.map(function (c, i) { return "ABCDEFGH"[i] + ") " + c; }).join(" | ") + "\n";
+    t += "Choices: " + q.choices.map(function (c, i) { return L[i] + ") " + c; }).join(" | ") + "\n";
   if (right) t += "Correct answer: " + right + "\n";
-  t += "قولّي في 3 نقط: ليه دي الإجابة الصح، وأهم trap في السؤال، والفرق بينها وبين أقرب اختيار.";
+  t += "اشرح براحتك وعلى قد ما السؤال محتاج: لو بسيط خليك قصير، ولو محتاج تفاصيل قول اللي يفهّمني بجد (الفكرة، الـmechanism، ليه الاختيارات التانية غلط، رقم أو criterion مهم) — بس اللي ليه لازمة في السؤال ده. ";
+  t += "الشكل حر: متقسمش الرد لأجزاء ثابتة زي «الشرح» و«الـtrap»، ومتلزمش نفسك بعدد نقط.";
   return t;
 }
 function openVerify(card) {
@@ -33575,7 +33609,7 @@ function verifyQuestionPrompt(q, right, mode) {
     t = "راجع الـMCQ ده: السؤال نفسه سليم ومكتوب صح؟\n";
   t += "Q: " + (q.text || "") + "\n";
   if (q.choices && q.choices.length)
-    t += "Choices: " + q.choices.map(function (c, i) { return "ABCDEFGH"[i] + ") " + c; }).join(" | ") + "\n";
+    t += "Choices: " + q.choices.map(function (c, i) { return "ABCDEFGHIJKLMNOP"[i] + ") " + c; }).join(" | ") + "\n";
   if (right) t += "الإجابة الرسمية: " + right + "\n";
   if (mode === "ans")
     t += "كون صارم: قارن الإجابة الرسمية بالدليل. قول بصراحة صح / غلط / فيها خلاف، وسمّي أي إجابة أحسن، واشرح الحق fact اللي يحسم الموضوع.\n";
@@ -34469,6 +34503,60 @@ paintModelBtn();
 document.getElementById("modelbtn").addEventListener("click", () => {
   sfx("navClick");
   setModel(MODEL === "ai" ? "file" : "ai");
+});
+
+/* ===== ⬇ download: الكويز كله HTML واحد يشتغل أوفلاين (من غير تقدّم الطالب ولا مفاتيحه) ===== */
+function quizFileName() {
+  let segs = [];
+  try { segs = decodeURIComponent(location.pathname || "").split("/").filter(Boolean); } catch (e) {}
+  let last = segs.length ? segs[segs.length - 1] : "";
+  if (/^index\.html?$/i.test(last)) { segs.pop(); last = segs.length ? segs[segs.length - 1] : ""; }
+  if (/\.html?$/i.test(last) && /^[\w .()-]+$/.test(last)) return last;
+  if (/^[A-Za-z][\w.-]*$/.test(last)) return last + ".html";
+  const t = (document.title || "quiz").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return (t || "quiz") + ".html";
+}
+/* احتياطي: الصفحة الأصلية = نسخة الـDOM قبل أول سكريبت + السكريبتات الأصلية زي ما هي */
+function quizSourceHtml() {
+  const pre = window.__QUIZ_PRE__;
+  if (!pre) return null;
+  const all = Array.prototype.slice.call(document.querySelectorAll("body > script:not([src])"));
+  const i = Math.max(0, all.indexOf(window.__QUIZ_PRE_EL__));
+  const rest = all.slice(i + 1).map(function (s) { return s.outerHTML; }).join("\n");
+  const k = pre.lastIndexOf("</body>");
+  if (k < 0) return null;
+  return "<!DOCTYPE html>\n" + pre.slice(0, k) + rest + "\n" + pre.slice(k) + "\n";
+}
+/* الأساسي: نفس بايتات الملف المنشور بالظبط (GitHub Pages / أي سيرفر) */
+async function fetchQuizHtml() {
+  if (!/^https?:$/.test(location.protocol)) return null;
+  try {
+    const r = await fetch(location.href.split("#")[0], { cache: "force-cache" });
+    if (!r.ok) return null;
+    const t = await r.text();
+    return (t.length > 50000 && t.indexOf('id="modelbtn"') !== -1 && t.indexOf('id="dlbtn"') !== -1) ? t : null;
+  } catch (e) { return null; }
+}
+function saveHtml(html, name) {
+  const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.style.display = "none";
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 8000);
+}
+async function downloadQuiz() {
+  const b = document.getElementById("dlbtn");
+  if (!b || b.disabled) return;
+  b.disabled = true;
+  try {
+    const html = (await fetchQuizHtml()) || quizSourceHtml();
+    if (html) { saveHtml(html, quizFileName()); toast("⬇ الكويز اتحمّل — افتحه في أي وقت من غير نت ✨"); }
+    else toast("⬇ جرّب تاني");
+  } finally { setTimeout(function () { b.disabled = false; }, 1200); }
+}
+document.getElementById("dlbtn").addEventListener("click", () => {
+  try { sfx("navClick"); } catch (e) {}
+  downloadQuiz();
 });
 
 
